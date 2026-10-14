@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if language == 'kk' %}Сақталған рецепттер{% else %}Сохраненные рецепты{% endif %}</title>
+    <link rel="stylesheet" href="{% static 'recipes/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="brand-lockup">
+                <div class="brand-mark" aria-hidden="true">✦</div>
+                <div class="brand-copy">
+                    <p class="eyebrow">SMARTCHEF</p>
+                    <h1>{% if language == 'kk' %}Сақталған рецепттер{% else %}Сохраненные рецепты{% endif %}</h1>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="{% url 'recipes:index' %}?language={{ language }}" class="nav-link">
+                    {% if language == 'kk' %}Басты бетке қайту{% else %}На главную{% endif %}
+                </a>
+            </nav>
+        </header>
+
+        <div class="lang-switch-links" role="group" aria-label="{% if language == 'kk' %}Интерфейс тілі{% else %}Язык интерфейса{% endif %}">
+            <a href="?language=kk" class="lang-link {% if language == 'kk' %}active{% endif %}" {% if language == 'kk' %}aria-current="page"{% endif %}>Қазақша</a>
+            <a href="?language=ru" class="lang-link {% if language == 'ru' %}active{% endif %}" {% if language == 'ru' %}aria-current="page"{% endif %}>Русский</a>
+        </div>
+
+        {% if saved_recipes %}
+            <div class="saved-list">
+                {% for item in saved_recipes %}
+                    <div class="recipe-card">
+                        <div class="card-meta">
+                            <span><strong>{% if language == 'kk' %}Өнімдер:{% else %}Продукты:{% endif %}</strong> {{ item.products }}</span>
+                            <span><strong>{% if language == 'kk' %}Уақыты:{% else %}Время:{% endif %}</strong> {% if item.minutes %}{{ item.minutes }} {% if language == 'kk' %}мин{% else %}мин{% endif %}{% else %}—{% endif %}</span>
+                            <span><strong>{% if language == 'kk' %}Тіл:{% else %}Язык:{% endif %}</strong> {% if item.language == 'kk' %}Қазақша{% elif item.language == 'ru' %}Русский{% else %}—{% endif %}</span>
+                            <span><strong>{% if language == 'kk' %}Күні:{% else %}Дата:{% endif %}</strong> {{ item.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        {% if item.recipe_data %}
+                            <h2>{{ item.recipe_data.title }}</h2>
+                            <h3>{% if language == 'kk' %}Ингредиенттер{% else %}Ингредиенты{% endif %}</h3>
+                            <ul class="recipe-list">
+                                {% for ingredient in item.recipe_data.ingredients %}<li>{{ ingredient }}</li>{% endfor %}
+                            </ul>
+                            <h3>{% if language == 'kk' %}Дайындау қадамдары{% else %}Шаги приготовления{% endif %}</h3>
+                            <ol class="recipe-list">
+                                {% for step in item.recipe_data.steps %}<li>{{ step }}</li>{% endfor %}
+                            </ol>
+                            <a href="{% url 'recipes:saved_cooking' item.id %}" class="btn-success">
+                                {% if language == 'kk' %}Дайындауды бастау{% else %}Начать готовить{% endif %}
+                            </a>
+                        {% else %}
+                            <div class="recipe-content">{{ item.recipe }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>{% if language == 'kk' %}Әлі ешқандай рецепт сақталмаған.{% else %}Сохраненных рецептов пока нет.{% endif %}</p>
+                <a href="{% url 'recipes:index' %}" class="btn-primary">
+                    {% if language == 'kk' %}Рецепт жасауға өту{% else %}Перейти к созданию{% endif %}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

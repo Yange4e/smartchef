@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if language == 'kk' %}Дайындау режимі{% else %}Режим готовки{% endif %} — {{ recipe.title }}</title>
+    <link rel="stylesheet" href="{% static 'recipes/style.css' %}">
+</head>
+<body>
+    <main class="container">
+        <header class="header">
+            <div class="brand-lockup">
+                <div class="brand-mark" aria-hidden="true">✦</div>
+                <div class="brand-copy">
+                    <p class="eyebrow">SMARTCHEF</p>
+                    <h1>{% if language == 'kk' %}Дайындау режимі{% else %}Режим готовки{% endif %}</h1>
+                    <p class="hero-subtitle">{{ recipe.title }}</p>
+                </div>
+            </div>
+            <a href="{{ return_url }}" class="nav-link">
+                {% if language == 'kk' %}Шығу{% else %}Выйти{% endif %}
+            </a>
+        </header>
+
+        <section class="recipe-card cooking-card" aria-labelledby="cooking-step-title">
+            <div class="cooking-progress-label">
+                <span>{% if language == 'kk' %}Қадам{% else %}Шаг{% endif %} {{ step_number }} / {{ total_steps }}</span>
+                <span>{{ progress_percent }}%</span>
+            </div>
+            <progress class="cooking-progress" value="{{ step_number }}" max="{{ total_steps }}">
+                {{ progress_percent }}%
+            </progress>
+
+            <h2 id="cooking-step-title">{% if language == 'kk' %}Қазір орындаңыз{% else %}Выполните сейчас{% endif %}</h2>
+            <p class="cooking-step" aria-live="polite">{{ step }}</p>
+
+            <form method="post" class="cooking-controls" data-cooking-form>
+                {% csrf_token %}
+                <input type="hidden" name="action_token" value="{{ action_token }}">
+                {% if step_number > 1 %}
+                    <button type="submit" name="action" value="back" class="btn-secondary">
+                        {% if language == 'kk' %}← Артқа{% else %}← Назад{% endif %}
+                    </button>
+                {% endif %}
+                {% if step_number < total_steps %}
+                    <button type="submit" name="action" value="next" class="btn-primary">
+                        {% if language == 'kk' %}Келесі{% else %}Дальше{% endif %} →
+                    </button>
+                {% endif %}
+                <button type="submit" name="action" value="finish" class="btn-secondary">
+                    {% if language == 'kk' %}Аяқтау{% else %}Завершить{% endif %}
+                </button>
+            </form>
+        </section>
+    </main>
+    <script src="{% static 'recipes/cooking.js' %}" defer></script>
+</body>
+</html>
