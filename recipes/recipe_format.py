@@ -4,6 +4,15 @@ import json
 RECIPE_PREFIX = "SMARTCHEF_JSON_V1\n"
 
 
+def _reject_duplicate_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Recipe JSON contains a duplicate key.")
+        result[key] = value
+    return result
+
+
 def validate_recipe_structure(data):
     if not isinstance(data, dict):
         raise ValueError("Recipe must be a JSON object.")
@@ -48,9 +57,11 @@ def parse_recipe_json(raw):
 
     payload = raw.removeprefix(RECIPE_PREFIX)
     try:
-        data = json.loads(payload)
+        data = json.loads(payload, object_pairs_hook=_reject_duplicate_keys)
     except json.JSONDecodeError as exc:
         raise ValueError("Recipe response is not valid JSON.") from exc
+    if not isinstance(data, dict) or set(data) != {"title", "ingredients", "steps"}:
+        raise ValueError("Recipe response must contain only title, ingredients, and steps.")
     return validate_recipe_structure(data)
 
 
@@ -68,7 +79,9 @@ def parse_stored_recipe(raw):
         raise ValueError("Recipe does not use the supported JSON format.")
 
     try:
-        payload = json.loads(raw[len(RECIPE_PREFIX):])
+        payload = json.loads(
+            raw[len(RECIPE_PREFIX):], object_pairs_hook=_reject_duplicate_keys
+        )
     except json.JSONDecodeError as exc:
         raise ValueError("Stored recipe is not valid JSON.") from exc
 

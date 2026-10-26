@@ -29,6 +29,10 @@
             <a href="?language=ru" class="lang-link {% if language == 'ru' %}active{% endif %}" {% if language == 'ru' %}aria-current="page"{% endif %}>Русский</a>
         </div>
 
+        {% if editor_message %}
+            <div class="alert" role="status">{{ editor_message }}</div>
+        {% endif %}
+
         {% if saved_recipes %}
             <div class="saved-list">
                 {% for item in saved_recipes %}
@@ -39,19 +43,24 @@
                             <span><strong>{% if language == 'kk' %}Тіл:{% else %}Язык:{% endif %}</strong> {% if item.language == 'kk' %}Қазақша{% elif item.language == 'ru' %}Русский{% else %}—{% endif %}</span>
                             <span><strong>{% if language == 'kk' %}Күні:{% else %}Дата:{% endif %}</strong> {{ item.created_at|date:"d.m.Y H:i" }}</span>
                         </div>
-                        {% if item.recipe_data %}
-                            <h2>{{ item.recipe_data.title }}</h2>
+                        {% if item.ingredients %}
+                            <h2>{{ item.title }}</h2>
                             <h3>{% if language == 'kk' %}Ингредиенттер{% else %}Ингредиенты{% endif %}</h3>
                             <ul class="recipe-list">
-                                {% for ingredient in item.recipe_data.ingredients %}<li>{{ ingredient }}</li>{% endfor %}
+                                {% for ingredient in item.ingredients %}<li>{{ ingredient }}</li>{% endfor %}
                             </ul>
                             <h3>{% if language == 'kk' %}Дайындау қадамдары{% else %}Шаги приготовления{% endif %}</h3>
                             <ol class="recipe-list">
-                                {% for step in item.recipe_data.steps %}<li>{{ step }}</li>{% endfor %}
+                                {% for step in item.steps %}<li>{{ step }}</li>{% endfor %}
                             </ol>
-                            <a href="{% url 'recipes:saved_cooking' item.id %}" class="btn-success">
-                                {% if language == 'kk' %}Дайындауды бастау{% else %}Начать готовить{% endif %}
-                            </a>
+                            <div class="saved-actions">
+                                <a href="{% url 'recipes:saved_cooking' item.id %}" class="btn-success">
+                                    {% if language == 'kk' %}Дайындауды бастау{% else %}Начать готовить{% endif %}
+                                </a>
+                                <a href="{% url 'recipes:editor' item.id %}" class="nav-link">
+                                    {% if language == 'kk' %}Рецептті өзгерту{% else %}Изменить рецепт{% endif %}
+                                </a>
+                            </div>
                         {% else %}
                             <div class="recipe-content">{{ item.recipe }}</div>
                         {% endif %}

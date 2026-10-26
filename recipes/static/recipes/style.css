@@ -713,6 +713,57 @@ select {
     gap: 16px;
 }
 
+.recipe-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.recipe-version {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.recipe-version h2 {
+    margin-bottom: 12px;
+    font-size: 1.15rem;
+}
+
+.recipe-version h3 {
+    margin: 0 0 12px;
+    color: var(--text-strong);
+    overflow-wrap: anywhere;
+}
+
+.recipe-version h4 {
+    margin-top: 12px;
+    color: var(--text-body);
+}
+
+.recipe-version .recipe-list {
+    overflow-wrap: anywhere;
+}
+
+.recipe-proposal {
+    border-color: rgba(29, 109, 77, 0.22);
+    background: rgba(239, 245, 238, 0.52);
+}
+
+.recipe-proposal-note {
+    margin-bottom: 12px;
+    color: var(--text-soft);
+    font-size: 0.82rem;
+}
+
+.recipe-version .btn-secondary {
+    margin: 0;
+}
+
 .card-meta {
     display: flex;
     flex-wrap: wrap;
@@ -873,6 +924,10 @@ select {
         gap: 5px;
         padding: 7px 6px;
         font-size: 0.73rem;
+    }
+
+    .recipe-version {
+        padding: 15px;
     }
 
     .category-button {

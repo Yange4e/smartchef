@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if language == 'kk' %}Рецептті өзгерту{% else %}Редактирование рецепта{% endif %} — {{ recipe_title }}</title>
+    <link rel="stylesheet" href="{% static 'recipes/style.css' %}">
+</head>
+<body>
+    <main class="container">
+        <header class="header">
+            <div class="brand-lockup">
+                <div class="brand-mark" aria-hidden="true">✦</div>
+                <div class="brand-copy">
+                    <p class="eyebrow">SMARTCHEF</p>
+                    <h1>{% if language == 'kk' %}Рецептті бірге өзгертейік{% else %}Изменим рецепт вместе{% endif %}</h1>
+                    <p class="hero-subtitle">{{ recipe_title }}</p>
+                </div>
+            </div>
+            <a href="{% url 'recipes:saved_recipes' %}?language={{ language }}" class="nav-link">
+                {% if language == 'kk' %}Менің рецепттерім{% else %}Мои рецепты{% endif %}
+            </a>
+        </header>
+
+        {% if error %}<div class="alert error" role="alert">{{ error }}</div>{% endif %}
+        {% if message %}<div class="alert editor-success" role="status">{{ message }}</div>{% endif %}
+        {% if pending %}
+            <div class="alert editor-notice" role="status">
+                {% if language == 'kk' %}Ұсыныс әлі сақталған жоқ. Тек «Қабылдау» түпнұсқа рецептті өзгертеді. Ұсыныс 10 минут жарамды.{% else %}Предложение еще не сохранено. Исходный рецепт изменит только кнопка «Принять». Предложение действительно 10 минут.{% endif %}
+            </div>
+        {% endif %}
+
+        <div class="recipe-comparison">
+            <section class="recipe-version recipe-original" aria-labelledby="original-recipe-title">
+                <p class="eyebrow">
+                    {% if pending %}{% if language == 'kk' %}БАСТАПҚЫ НҰСҚА{% else %}ИСХОДНАЯ ВЕРСИЯ{% endif %}{% else %}{% if language == 'kk' %}САҚТАЛҒАН РЕЦЕПТ{% else %}СОХРАНЕННЫЙ РЕЦЕПТ{% endif %}{% endif %}
+                    · #{{ item.id }}
+                </p>
+                <h2 id="original-recipe-title">
+                    {% if language == 'kk' %}Түпнұсқа рецепт{% else %}Исходный рецепт{% endif %}
+                </h2>
+                {% if recipe %}
+                    <h3>{{ recipe_title }}</h3>
+                    <h4>{% if language == 'kk' %}Ингредиенттер{% else %}Ингредиенты{% endif %}</h4>
+                    <ul class="recipe-list">
+                        {% for ingredient in ingredients %}<li>{{ ingredient }}</li>{% endfor %}
+                    </ul>
+                    <h4>{% if language == 'kk' %}Дайындау қадамдары{% else %}Шаги приготовления{% endif %}</h4>
+                    <ol class="recipe-list">
+                        {% for step in steps %}<li>{{ step }}</li>{% endfor %}
+                    </ol>
+                    <a href="{% url 'recipes:saved_cooking' item.id %}" class="btn-success">
+                        {% if language == 'kk' %}Дайындауды бастау{% else %}Начать готовить{% endif %}
+                    </a>
+                {% else %}
+                    <p class="recipe-content">{{ item.recipe_text }}</p>
+                    <p class="editor-legacy">
+                        {% if language == 'kk' %}Бұл ескі мәтіндік рецепт. Оны бұл редактор өзгертпейді.{% else %}Это старый текстовый рецепт. Этот редактор не изменяет его.{% endif %}
+                    </p>
+                {% endif %}
+            </section>
+
+            <section class="recipe-version recipe-proposal" aria-labelledby="proposal-title">
+                {% if candidate %}
+                    <p class="eyebrow">{% if language == 'kk' %}AI ҰСЫНЫСЫ · ӘЛІ САҚТАЛМАҒАН{% else %}ПРЕДЛОЖЕНИЕ AI · ЕЩЕ НЕ СОХРАНЕНО{% endif %}</p>
+                    <h2 id="proposal-title">{{ candidate.title }}</h2>
+                    <p class="editor-instruction"><strong>{% if language == 'kk' %}Сұрау:{% else %}Запрос:{% endif %}</strong> {{ pending.instruction }}</p>
+                    <h3>{% if language == 'kk' %}Ингредиенттер{% else %}Ингредиенты{% endif %}</h3>
+                    <ul class="recipe-list">
+                        {% for ingredient in candidate.ingredients %}<li>{{ ingredient }}</li>{% endfor %}
+                    </ul>
+                    <h3>{% if language == 'kk' %}Дайындау қадамдары{% else %}Шаги приготовления{% endif %}</h3>
+                    <ol class="recipe-list">
+                        {% for step in candidate.steps %}<li>{{ step }}</li>{% endfor %}
+                    </ol>
+                    <form method="post" class="editor-actions">
+                        {% csrf_token %}
+                        <input type="hidden" name="token" value="{{ pending.token }}">
+                        <input type="hidden" name="language" value="{{ language }}">
+                        <button type="submit" name="action" value="accept" class="btn-primary">
+                            {% if language == 'kk' %}Қабылдау{% else %}Принять{% endif %}
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn-secondary">
+                            {% if language == 'kk' %}Бас тарту{% else %}Отклонить{% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <p class="eyebrow">{% if language == 'kk' %}БІР ӨЗГЕРІС СҰРА{% else %}ПРЕДЛОЖИТЬ ИЗМЕНЕНИЕ{% endif %}</p>
+                    <h2 id="proposal-title">{% if language == 'kk' %}Нені өзгертеміз?{% else %}Что изменим?{% endif %}</h2>
+                    {% if can_edit %}
+                        <p class="editor-example">
+                            {% if language == 'kk' %}Мысал: «Пештің орнына табада дайындауға бейімде».{% else %}Например: «Адаптируй рецепт для приготовления на сковороде вместо духовки».{% endif %}
+                        </p>
+                        <form method="post" class="editor-form" data-editor-propose>
+                            {% csrf_token %}
+                            <input type="hidden" name="language" value="{{ language }}">
+                            <label for="edit-request">
+                                {% if language == 'kk' %}Өзгерту сұрауы{% else %}Запрос на изменение{% endif %}
+                            </label>
+                            <textarea
+                                id="edit-request"
+                                name="instruction"
+                                minlength="3"
+                                maxlength="300"
+                                rows="4"
+                                required
+                                placeholder="{% if language == 'kk' %}Пештің орнына табада дайындауға бейімде{% else %}Адаптируй для сковороды вместо духовки{% endif %}"
+                            >{{ instruction }}</textarea>
+                            <p class="form-hint">{% if language == 'kk' %}3–300 таңба{% else %}3–300 символов{% endif %}</p>
+                            <button type="submit" name="action" value="propose" class="btn-primary" data-editor-submit>
+                                {% if language == 'kk' %}Ұсыныс алу{% else %}Получить предложение{% endif %}
+                            </button>
+                            <p class="form-hint" data-editor-wait role="status" aria-live="polite" hidden>
+                                {% if language == 'kk' %}Сұрау өңделуде...{% else %}Запрос обрабатывается...{% endif %}
+                            </p>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </section>
+        </div>
+
+        <div class="editor-bottom">
+            {% if undo %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="language" value="{{ language }}">
+                    <input type="hidden" name="token" value="{{ undo.token }}">
+                    <button type="submit" name="action" value="undo" class="btn-secondary">
+                        {% if language == 'kk' %}Алдыңғы нұсқаға қайту{% else %}Вернуть предыдущую версию{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+            <a href="{% url 'recipes:saved_recipes' %}?language={{ language }}" class="nav-link">
+                {% if language == 'kk' %}Менің рецепттерім{% else %}Мои рецепты{% endif %}
+            </a>
+        </div>
+    </main>
+    <script src="{% static 'recipes/editor.js' %}" defer></script>
+</body>
+</html>
